@@ -1,5 +1,7 @@
 # Disney Animation Tracker
 
+![Disney Animation Tracker](screenshots/preview.png)
+
 A beautiful, interactive web application to track your journey through the magical world of Disney and Pixar animated feature films. Track your progress, earn achievements, and explore the rich history of animation across different eras.
 
 ## ✨ Features
