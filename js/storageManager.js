@@ -7,10 +7,44 @@ class StorageManager {
         // Storage keys
         this.keys = {
             watchedMovies: 'disneyTracker_watchedMovies',
+            watchHistory: 'disneyTracker_watchHistory',
             achievements: 'disneyTracker_achievements',
             achievementData: 'disneyTracker_achievementData',
             preferences: 'disneyTracker_preferences'
         };
+        
+        // Initialize with default values if storage is empty
+        this.initialize();
+    }
+    
+    // Initialize storage with default values if needed
+    initialize() {
+        if (!localStorage.getItem(this.keys.watchedMovies)) {
+            this.saveWatchedMovies([]);
+        }
+        
+        if (!localStorage.getItem(this.keys.watchHistory)) {
+            this.saveWatchHistory([]);
+        }
+        
+        if (!localStorage.getItem(this.keys.achievements)) {
+            this.saveEarnedAchievements([]);
+        }
+        
+        if (!localStorage.getItem(this.keys.achievementData)) {
+            this.saveAchievementData({});
+        }
+        
+        if (!localStorage.getItem(this.keys.preferences)) {
+            this.savePreferences({
+                viewMode: 'grid',
+                filters: {
+                    studios: ['disney', 'pixar'],
+                    eras: ['golden', 'wartime', 'silver', 'bronze', 'renaissance', 'postRenaissance', 'revival'],
+                    status: ['watched', 'unwatched']
+                }
+            });
+        }
     }
 
     // Watched Movies Storage
@@ -22,11 +56,31 @@ class StorageManager {
         localStorage.setItem(this.keys.watchedMovies, JSON.stringify(watchedMovies));
     }
 
+    // Watch History with timestamps
+    getWatchHistory() {
+        return JSON.parse(localStorage.getItem(this.keys.watchHistory)) || [];
+    }
+    
+    saveWatchHistory(history) {
+        localStorage.setItem(this.keys.watchHistory, JSON.stringify(history));
+    }
+    
     addWatchedMovie(movieId) {
+        // Add to watched movie IDs list
         const watchedMovies = this.getWatchedMovies();
         if (!watchedMovies.includes(movieId)) {
             watchedMovies.push(movieId);
             this.saveWatchedMovies(watchedMovies);
+            
+            // Add to watch history with timestamp
+            const history = this.getWatchHistory();
+            history.push({
+                movieId,
+                timestamp: Date.now(),
+                action: 'added'
+            });
+            this.saveWatchHistory(history);
+            
             return true; // Movie was newly added
         }
         return false; // Movie was already in watched list
@@ -36,8 +90,19 @@ class StorageManager {
         const watchedMovies = this.getWatchedMovies();
         const index = watchedMovies.indexOf(movieId);
         if (index !== -1) {
+            // Remove from watched movies list
             watchedMovies.splice(index, 1);
             this.saveWatchedMovies(watchedMovies);
+            
+            // Add removal entry to history
+            const history = this.getWatchHistory();
+            history.push({
+                movieId,
+                timestamp: Date.now(),
+                action: 'removed'
+            });
+            this.saveWatchHistory(history);
+            
             return true; // Movie was removed
         }
         return false; // Movie wasn't in the list
@@ -101,12 +166,52 @@ class StorageManager {
         localStorage.setItem(this.keys.preferences, JSON.stringify(preferences));
     }
 
+    // Get progress stats
+    getProgressStats() {
+        const watchedMovies = this.getWatchedMovies();
+        
+        // Filter Disney watched movies
+        const watchedDisney = DISNEY_FILMS.filter(film => 
+            watchedMovies.includes(film.id)
+        ).length;
+        
+        // Filter Pixar watched movies
+        const watchedPixar = PIXAR_FILMS.filter(film => 
+            watchedMovies.includes(film.id)
+        ).length;
+        
+        // Calculate percentages
+        const disneyPercentage = DISNEY_FILMS.length ? Math.round((watchedDisney / DISNEY_FILMS.length) * 100) : 0;
+        const pixarPercentage = PIXAR_FILMS.length ? Math.round((watchedPixar / PIXAR_FILMS.length) * 100) : 0;
+        const overallPercentage = ALL_FILMS.length ? Math.round((watchedMovies.length / ALL_FILMS.length) * 100) : 0;
+        
+        return {
+            watched: {
+                total: watchedMovies.length,
+                disney: watchedDisney,
+                pixar: watchedPixar
+            },
+            totals: {
+                all: ALL_FILMS.length,
+                disney: DISNEY_FILMS.length,
+                pixar: PIXAR_FILMS.length
+            },
+            percentages: {
+                overall: overallPercentage,
+                disney: disneyPercentage,
+                pixar: pixarPercentage
+            }
+        };
+    }
+
     // Clear all storage (reset functionality)
     clearAllData() {
         localStorage.removeItem(this.keys.watchedMovies);
+        localStorage.removeItem(this.keys.watchHistory);
         localStorage.removeItem(this.keys.achievements);
         localStorage.removeItem(this.keys.achievementData);
         localStorage.removeItem(this.keys.preferences);
+        this.initialize();
     }
 }
 

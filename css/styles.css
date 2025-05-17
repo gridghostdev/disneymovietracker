@@ -448,26 +448,6 @@ header {
     align-items: center;
     justify-content: center;
     transition: all var(--transition-slow);
-    will-change: background;
-}
-
-/* Add animation for progress circle updates */
-@keyframes progress-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
-    70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-}
-
-.progress-updated {
-    animation: progress-pulse 0.5s ease-out;
-}
-
-/* Make percentage text transition smoothly as well */
-.percentage {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    transition: all 0.3s ease;
 }
 
 .inner-circle {
@@ -1574,4 +1554,30 @@ footer a:hover {
         left: 20px;
         max-width: unset;
     }
+}
+
+/* Reset button style */
+.settings-options {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+}
+
+.danger-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius-full);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+.danger-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
 }

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize watched state from storageManager instead of directly from localStorage
+    // Initialize watched state from storageManager
     let watchedMovies = storageManager.getWatchedMovies();
     
     // Create chronological merged array for display purposes
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return a.id - b.id;
     });
     
-    // Render movies - use CHRONOLOGICAL_FILMS instead of ALL_FILMS for default display
+    // Render movies with initial data
     renderMovies(CHRONOLOGICAL_FILMS);
     updateProgressStats();
     updateAchievementStats();
@@ -167,92 +167,110 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function toggleWatchStatus(movieId, element) {
+        const movieCard = element.closest('.movie-card');
+        
         if (storageManager.isMovieWatched(movieId)) {
             // Remove from watched
-            storageManager.removeWatchedMovie(movieId);
-            watchedMovies = storageManager.getWatchedMovies(); // Update local reference
-            
-            element.classList.remove('watched');
-            element.querySelector('i').classList.remove('fa-check-circle');
-            element.querySelector('i').classList.add('fa-circle');
-            
-            // Update card status attribute
-            element.closest('.movie-card').setAttribute('data-status', 'unwatched');
+            const removed = storageManager.removeWatchedMovie(movieId);
+            if (removed) {
+                // Update local reference
+                watchedMovies = storageManager.getWatchedMovies();
+                
+                // Update UI
+                element.classList.remove('watched');
+                element.querySelector('i').classList.remove('fa-check-circle');
+                element.querySelector('i').classList.add('fa-circle');
+                
+                // Update card status attribute
+                movieCard.setAttribute('data-status', 'unwatched');
+                
+                // Check for achievement changes after removal
+                achievementManager.registerMovieUnwatched(movieId, watchedMovies);
+                
+                // Update stats
+                updateProgressStats();
+                updateAchievementStats();
+            }
         } else {
             // Add to watched
-            storageManager.addWatchedMovie(movieId);
-            watchedMovies = storageManager.getWatchedMovies(); // Update local reference
-            
-            element.classList.add('watched');
-            element.querySelector('i').classList.remove('fa-circle');
-            element.querySelector('i').classList.add('fa-check-circle');
-            
-            element.closest('.movie-card').setAttribute('data-status', 'watched');
-            
-            // Check for achievements
-            const newAchievements = achievementManager.registerMovieWatched(movieId, watchedMovies);
-            if (newAchievements.length > 0) {
-                showAchievementToast(newAchievements[0]);
+            const added = storageManager.addWatchedMovie(movieId);
+            if (added) {
+                // Update local reference
+                watchedMovies = storageManager.getWatchedMovies();
+                
+                // Update UI
+                element.classList.add('watched');
+                element.querySelector('i').classList.remove('fa-circle');
+                element.querySelector('i').classList.add('fa-check-circle');
+                
+                // Update card status attribute
+                movieCard.setAttribute('data-status', 'watched');
+                
+                // Check for achievements
+                const newAchievements = achievementManager.registerMovieWatched(movieId, watchedMovies);
+                if (newAchievements.length > 0) {
+                    showAchievementToast(newAchievements[0]);
+                }
+                
+                // Update stats
+                updateProgressStats();
+                updateAchievementStats();
             }
         }
-        
-        // Update progress stats
-        updateProgressStats();
-        
-        // Update achievement stats
-        updateAchievementStats();
     }
     
     function updateProgressStats() {
+        // Get progress stats from the storage manager
+        const progressStats = storageManager.getProgressStats();
+        
         // Update total counts
-        document.getElementById('total-count').textContent = ALL_FILMS.length;
-        document.getElementById('total-disney').textContent = DISNEY_FILMS.length;
-        document.getElementById('total-pixar').textContent = PIXAR_FILMS.length;
+        document.getElementById('total-count').textContent = progressStats.totals.all;
+        document.getElementById('total-disney').textContent = progressStats.totals.disney;
+        document.getElementById('total-pixar').textContent = progressStats.totals.pixar;
         
-        // Overall progress
-        const watchedCount = watchedMovies.length;
-        document.getElementById('watched-count').textContent = watchedCount;
-        const overallProgress = Math.round((watchedCount / ALL_FILMS.length) * 100);
-        updateProgressCircle('overall-progress', overallProgress);
+        // Update watched counts
+        document.getElementById('watched-count').textContent = progressStats.watched.total;
+        document.getElementById('watched-disney').textContent = progressStats.watched.disney;
+        document.getElementById('watched-pixar').textContent = progressStats.watched.pixar;
         
-        // Disney progress
-        const watchedDisney = watchedMovies.filter(id => {
-            const movie = ALL_FILMS.find(m => m.id === id && m.studio === "disney");
-            return movie !== undefined;
-        }).length;
-        document.getElementById('watched-disney').textContent = watchedDisney;
-        const disneyProgress = Math.round((watchedDisney / DISNEY_FILMS.length) * 100);
-        updateProgressCircle('disney-progress', disneyProgress);
-        
-        // Pixar progress
-        const watchedPixar = watchedMovies.filter(id => {
-            const movie = ALL_FILMS.find(m => m.id === id && m.studio === "pixar");
-            return movie !== undefined;
-        }).length;
-        document.getElementById('watched-pixar').textContent = watchedPixar;
-        const pixarProgress = Math.round((watchedPixar / PIXAR_FILMS.length) * 100);
-        updateProgressCircle('pixar-progress', pixarProgress);
+        // Update progress circles
+        updateProgressCircle('overall-progress', progressStats.percentages.overall);
+        updateProgressCircle('disney-progress', progressStats.percentages.disney);
+        updateProgressCircle('pixar-progress', progressStats.percentages.pixar);
     }
     
     function updateProgressCircle(id, percentage) {
         const circle = document.getElementById(id);
-        // Set the new gradient
-        circle.style.background = `conic-gradient(var(--primary-color) ${percentage}%, #e9ecef 0%)`;
+        if (circle) {
+            circle.style.background = `conic-gradient(var(--primary-color) ${percentage}%, #e9ecef 0%)`;
+            const percentageElement = circle.querySelector('.percentage');
+            if (percentageElement) {
+                percentageElement.textContent = `${percentage}%`;
+            }
+        }
+    }
+    
+    function updateAchievementStats() {
+        const achievementStats = achievementManager.getAchievementStats();
         
-        // Force a DOM reflow to ensure the gradient updates immediately
-        void circle.offsetWidth;
+        // Update count
+        document.getElementById('earned-achievements').textContent = achievementStats.earned;
+        document.getElementById('total-achievements').textContent = achievementStats.total;
         
-        // Update the percentage text
-        circle.querySelector('.percentage').textContent = `${percentage}%`;
-        
-        // Update the data-progress attribute for potential CSS animations
-        circle.setAttribute('data-progress', percentage);
-        
-        // Apply a quick highlight effect to show the update
-        circle.classList.remove('progress-updated');
-        // Force reflow again
-        void circle.offsetWidth;
-        circle.classList.add('progress-updated');
+        // Update progress circle
+        updateProgressCircle('achievements-progress', achievementStats.percentage);
+    }
+    
+    // Add this function to reset all data if needed
+    function resetAllData() {
+        if (confirm("Are you sure you want to reset all your progress? This cannot be undone.")) {
+            storageManager.clearAllData();
+            watchedMovies = [];
+            renderMovies(CHRONOLOGICAL_FILMS);
+            updateProgressStats();
+            updateAchievementStats();
+            alert("All progress has been reset.");
+        }
     }
     
     function fetchMoviePoster(tmdbId, imgElement, title, year) {
@@ -534,18 +552,5 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             toast.classList.remove('active');
         }, 5000);
-    }
-    
-    function updateAchievementStats() {
-        const earnedAchievements = achievementManager.getAllEarnedAchievements();
-        const totalAchievements = getAllAchievements().length;
-        const percentage = Math.round((earnedAchievements.length / totalAchievements) * 100);
-        
-        // Update count
-        document.getElementById('earned-achievements').textContent = earnedAchievements.length;
-        document.getElementById('total-achievements').textContent = totalAchievements;
-        
-        // Update progress circle
-        updateProgressCircle('achievements-progress', percentage);
     }
 });
