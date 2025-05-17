@@ -1,6 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize watched state from localStorage
-    let watchedMovies = JSON.parse(localStorage.getItem(CONFIG.localStorageKey)) || [];
+    // Initialize storage manager
+    StorageManager.init();
+    
+    // Get watched movies from storage
+    let watchedMovies = StorageManager.getWatchedMovies();
     
     // Create chronological merged array for display purposes
     const CHRONOLOGICAL_FILMS = [...ALL_FILMS].sort((a, b) => {
@@ -18,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return a.id - b.id;
     });
     
-    // Render movies - use CHRONOLOGICAL_FILMS instead of ALL_FILMS for default display
+    // Render movies
     renderMovies(CHRONOLOGICAL_FILMS);
     updateProgressStats();
     updateAchievementStats();
@@ -167,33 +170,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function toggleWatchStatus(movieId, element) {
-        const index = watchedMovies.indexOf(movieId);
+        const isNowWatched = StorageManager.toggleMovieWatched(movieId);
         
-        if (index === -1) {
-            // Add to watched
-            watchedMovies.push(movieId);
+        if (isNowWatched) {
+            // Update to watched state
             element.classList.add('watched');
             element.querySelector('i').classList.remove('fa-circle');
             element.querySelector('i').classList.add('fa-check-circle');
             
             // Check for achievements
-            const newAchievements = achievementManager.registerMovieWatched(movieId, watchedMovies);
+            const newAchievements = achievementManager.registerMovieWatched(movieId, StorageManager.getWatchedMovies());
             if (newAchievements.length > 0) {
                 showAchievementToast(newAchievements[0]);
             }
         } else {
-            // Remove from watched
-            watchedMovies.splice(index, 1);
+            // Update to unwatched state
             element.classList.remove('watched');
             element.querySelector('i').classList.remove('fa-check-circle');
             element.querySelector('i').classList.add('fa-circle');
         }
         
         // Update card status attribute
-        element.closest('.movie-card').setAttribute('data-status', index === -1 ? 'watched' : 'unwatched');
-        
-        // Save to localStorage
-        localStorage.setItem(CONFIG.localStorageKey, JSON.stringify(watchedMovies));
+        element.closest('.movie-card').setAttribute('data-status', isNowWatched ? 'watched' : 'unwatched');
         
         // Update progress stats
         updateProgressStats();
@@ -203,6 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateProgressStats() {
+        // Get latest watched movies
+        watchedMovies = StorageManager.getWatchedMovies();
+        
         // Update total counts
         document.getElementById('total-count').textContent = ALL_FILMS.length;
         document.getElementById('total-disney').textContent = DISNEY_FILMS.length;

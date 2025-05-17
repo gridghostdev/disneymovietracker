@@ -1,24 +1,13 @@
 class AchievementManager {
     constructor() {
-        this.storageKey = 'disneyTrackerAchievements';
-        this.earnedAchievements = this.loadEarnedAchievements();
-        this.achievementData = this.loadAchievementData();
+        this.earnedAchievements = [];
+        this.achievementData = {};
+        this.loadFromStorage();
     }
     
-    loadEarnedAchievements() {
-        return JSON.parse(localStorage.getItem(this.storageKey)) || [];
-    }
-    
-    loadAchievementData() {
-        return JSON.parse(localStorage.getItem(this.storageKey + '_data')) || {};
-    }
-    
-    saveEarnedAchievements() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.earnedAchievements));
-    }
-    
-    saveAchievementData() {
-        localStorage.setItem(this.storageKey + '_data', JSON.stringify(this.achievementData));
+    loadFromStorage() {
+        this.earnedAchievements = StorageManager.getAchievements();
+        this.achievementData = StorageManager.getAchievementData();
     }
     
     hasAchievement(id) {
@@ -28,7 +17,7 @@ class AchievementManager {
     awardAchievement(id) {
         if (!this.hasAchievement(id)) {
             this.earnedAchievements.push(id);
-            this.saveEarnedAchievements();
+            StorageManager.saveAchievements(this.earnedAchievements);
             return true;
         }
         return false;
@@ -36,7 +25,7 @@ class AchievementManager {
     
     setAchievementData(key, value) {
         this.achievementData[key] = value;
-        this.saveAchievementData();
+        StorageManager.saveAchievementData(this.achievementData);
     }
     
     getAchievementData(key) {
@@ -60,7 +49,7 @@ class AchievementManager {
     
     // Special achievement tracking functions
     registerMovieWatched(movieId, watchedMovies) {
-        const timestamp = new Date().getTime();
+        const timestamp = Date.now();
         const recentWatches = this.getAchievementData('recentWatches') || [];
         
         // Add this watch to recent watches
