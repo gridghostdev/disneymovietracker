@@ -1238,12 +1238,50 @@ footer a:hover {
     #filter-btn {
         width: 100%;
         justify-content: center;
+        padding: 16px 25px; /* Increased vertical padding */
+        font-size: 1.05rem; /* Slightly larger text */
+        height: 55px; /* Set explicit height */
+        font-weight: 600; /* Make text more pronounced */
     }
     
     .filter-dropdown {
         width: 100%;
         left: 0;
         right: auto;
+        padding: 30px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .filter-option {
+        margin-bottom: 30px;
+    }
+    
+    .checkbox-styled label {
+        padding: 10px 0;
+        font-size: 1.05rem;
+    }
+    
+    .checkbox-styled label::before {
+        width: 26px;
+        height: 26px;
+        margin-right: 15px;
+    }
+    
+    .checkbox-styled input[type="checkbox"]:checked + label::after {
+        left: 9px;
+        top: 16px;
+        width: 8px;
+        height: 14px;
+    }
+    
+    .checkbox-group {
+        gap: 18px;
+    }
+    
+    .filter-option h4 {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
     }
     
     .stats-container {
@@ -1288,6 +1326,18 @@ footer a:hover {
     
     .movie-detail-poster {
         height: 300px;
+    }
+    
+    #filter-btn {
+        height: 60px; /* Even taller on very small screens */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    #filter-btn i {
+        font-size: 1.2rem; /* Larger icon */
     }
     
     .watch-toggle-btn {
