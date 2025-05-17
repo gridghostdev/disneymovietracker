@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize storage manager
-    StorageManager.init();
-    
-    // Get watched movies from storage
-    let watchedMovies = StorageManager.getWatchedMovies();
+    // Initialize watched state from storageManager instead of directly from localStorage
+    let watchedMovies = storageManager.getWatchedMovies();
     
     // Create chronological merged array for display purposes
     const CHRONOLOGICAL_FILMS = [...ALL_FILMS].sort((a, b) => {
@@ -21,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return a.id - b.id;
     });
     
-    // Render movies
+    // Render movies - use CHRONOLOGICAL_FILMS instead of ALL_FILMS for default display
     renderMovies(CHRONOLOGICAL_FILMS);
     updateProgressStats();
     updateAchievementStats();
@@ -170,28 +167,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function toggleWatchStatus(movieId, element) {
-        const isNowWatched = StorageManager.toggleMovieWatched(movieId);
-        
-        if (isNowWatched) {
-            // Update to watched state
+        if (storageManager.isMovieWatched(movieId)) {
+            // Remove from watched
+            storageManager.removeWatchedMovie(movieId);
+            watchedMovies = storageManager.getWatchedMovies(); // Update local reference
+            
+            element.classList.remove('watched');
+            element.querySelector('i').classList.remove('fa-check-circle');
+            element.querySelector('i').classList.add('fa-circle');
+            
+            // Update card status attribute
+            element.closest('.movie-card').setAttribute('data-status', 'unwatched');
+        } else {
+            // Add to watched
+            storageManager.addWatchedMovie(movieId);
+            watchedMovies = storageManager.getWatchedMovies(); // Update local reference
+            
             element.classList.add('watched');
             element.querySelector('i').classList.remove('fa-circle');
             element.querySelector('i').classList.add('fa-check-circle');
             
+            element.closest('.movie-card').setAttribute('data-status', 'watched');
+            
             // Check for achievements
-            const newAchievements = achievementManager.registerMovieWatched(movieId, StorageManager.getWatchedMovies());
+            const newAchievements = achievementManager.registerMovieWatched(movieId, watchedMovies);
             if (newAchievements.length > 0) {
                 showAchievementToast(newAchievements[0]);
             }
-        } else {
-            // Update to unwatched state
-            element.classList.remove('watched');
-            element.querySelector('i').classList.remove('fa-check-circle');
-            element.querySelector('i').classList.add('fa-circle');
         }
-        
-        // Update card status attribute
-        element.closest('.movie-card').setAttribute('data-status', isNowWatched ? 'watched' : 'unwatched');
         
         // Update progress stats
         updateProgressStats();
@@ -201,9 +204,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updateProgressStats() {
-        // Get latest watched movies
-        watchedMovies = StorageManager.getWatchedMovies();
-        
         // Update total counts
         document.getElementById('total-count').textContent = ALL_FILMS.length;
         document.getElementById('total-disney').textContent = DISNEY_FILMS.length;
@@ -356,17 +356,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add event listener to watch toggle button
                 modalBody.querySelector('.watch-toggle-btn').addEventListener('click', function() {
                     const movieId = parseInt(this.getAttribute('data-id'));
-                    const isCurrentlyWatched = watchedMovies.includes(movieId);
+                    const isCurrentlyWatched = storageManager.isMovieWatched(movieId);
                     
                     if (isCurrentlyWatched) {
                         // Remove from watched
-                        const index = watchedMovies.indexOf(movieId);
-                        watchedMovies.splice(index, 1);
+                        storageManager.removeWatchedMovie(movieId);
+                        watchedMovies = storageManager.getWatchedMovies(); // Update local reference
                         this.classList.remove('watched');
                         this.innerHTML = '<i class="fas fa-circle"></i> Mark as Watched';
                     } else {
                         // Add to watched
-                        watchedMovies.push(movieId);
+                        storageManager.addWatchedMovie(movieId);
+                        watchedMovies = storageManager.getWatchedMovies(); // Update local reference
                         this.classList.add('watched');
                         this.innerHTML = '<i class="fas fa-check-circle"></i> Watched';
                     }
@@ -387,8 +388,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         card.setAttribute('data-status', isCurrentlyWatched ? 'unwatched' : 'watched');
                     }
                     
-                    // Save to localStorage
-                    localStorage.setItem(CONFIG.localStorageKey, JSON.stringify(watchedMovies));
+                    // Save to storageManager
+                    storageManager.saveWatchedMovies(watchedMovies);
                     
                     // Update progress stats
                     updateProgressStats();

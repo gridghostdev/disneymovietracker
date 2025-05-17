@@ -1,23 +1,17 @@
 class AchievementManager {
     constructor() {
-        this.earnedAchievements = [];
-        this.achievementData = {};
-        this.loadFromStorage();
-    }
-    
-    loadFromStorage() {
-        this.earnedAchievements = StorageManager.getAchievements();
-        this.achievementData = StorageManager.getAchievementData();
+        this.earnedAchievements = storageManager.getEarnedAchievements();
+        this.achievementData = storageManager.getAchievementData();
     }
     
     hasAchievement(id) {
-        return this.earnedAchievements.includes(id);
+        return storageManager.hasAchievement(id);
     }
     
     awardAchievement(id) {
         if (!this.hasAchievement(id)) {
             this.earnedAchievements.push(id);
-            StorageManager.saveAchievements(this.earnedAchievements);
+            storageManager.saveEarnedAchievements(this.earnedAchievements);
             return true;
         }
         return false;
@@ -25,7 +19,7 @@ class AchievementManager {
     
     setAchievementData(key, value) {
         this.achievementData[key] = value;
-        StorageManager.saveAchievementData(this.achievementData);
+        storageManager.saveAchievementData(this.achievementData);
     }
     
     getAchievementData(key) {
@@ -49,7 +43,7 @@ class AchievementManager {
     
     // Special achievement tracking functions
     registerMovieWatched(movieId, watchedMovies) {
-        const timestamp = Date.now();
+        const timestamp = new Date().getTime();
         const recentWatches = this.getAchievementData('recentWatches') || [];
         
         // Add this watch to recent watches
