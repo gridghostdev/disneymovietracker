@@ -1,6 +1,5 @@
 # Disney Animation Tracker
 
-![Disney Animation Tracker](screenshots/preview.png)
 
 A beautiful, interactive web application to track your journey through the magical world of Disney and Pixar animated feature films. Track your progress, earn achievements, and explore the rich history of animation across different eras.
 
@@ -69,12 +68,12 @@ Track your Disney and Pixar journey with these achievement categories:
 ## 🚀 Getting Started
 
 ### Viewing the Tracker
-Simply visit [https://yourusername.github.io/disney-tracker](https://yourusername.github.io/disney-tracker) to use the application online.
+Simply visit [https://gridghostdev.github.io/disney-tracker](https://gridghostdev.github.io/disney-tracker) to use the application online.
 
 ### Local Development
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/disney-tracker.git
+   git clone https://github.com/gridghostdev/disney-tracker.git
    ```
 2. Open `index.html` in your browser to run locally
 3. No build process or dependencies required!
