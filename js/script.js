@@ -236,8 +236,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateProgressCircle(id, percentage) {
         const circle = document.getElementById(id);
+        // Set the new gradient
         circle.style.background = `conic-gradient(var(--primary-color) ${percentage}%, #e9ecef 0%)`;
+        
+        // Force a DOM reflow to ensure the gradient updates immediately
+        void circle.offsetWidth;
+        
+        // Update the percentage text
         circle.querySelector('.percentage').textContent = `${percentage}%`;
+        
+        // Update the data-progress attribute for potential CSS animations
+        circle.setAttribute('data-progress', percentage);
+        
+        // Apply a quick highlight effect to show the update
+        circle.classList.remove('progress-updated');
+        // Force reflow again
+        void circle.offsetWidth;
+        circle.classList.add('progress-updated');
     }
     
     function fetchMoviePoster(tmdbId, imgElement, title, year) {

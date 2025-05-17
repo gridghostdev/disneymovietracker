@@ -448,6 +448,26 @@ header {
     align-items: center;
     justify-content: center;
     transition: all var(--transition-slow);
+    will-change: background;
+}
+
+/* Add animation for progress circle updates */
+@keyframes progress-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.3); }
+    70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+.progress-updated {
+    animation: progress-pulse 0.5s ease-out;
+}
+
+/* Make percentage text transition smoothly as well */
+.percentage {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
 }
 
 .inner-circle {
