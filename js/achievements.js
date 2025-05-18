@@ -128,7 +128,7 @@ const ACHIEVEMENTS = {
             id: "golden_age_expert",
             title: "Golden Age Expert",
             description: "Watch all Golden Age Disney films (1937-1942).",
-            icon: "fa-crown",
+            icon: "👑",
             category: "Era Mastery",
             condition: (watchedMovies, allMovies) => {
                 const goldenAgeMovies = allMovies.filter(movie => movie.era === "golden");
@@ -140,7 +140,7 @@ const ACHIEVEMENTS = {
             id: "renaissance_connoisseur",
             title: "Renaissance Connoisseur",
             description: "Watch all Renaissance Disney films (1989-1999).",
-            icon: "fa-palette",
+            icon: "🎨",
             category: "Era Mastery",
             condition: (watchedMovies, allMovies) => {
                 const renaissanceMovies = allMovies.filter(movie => movie.era === "renaissance");
@@ -152,7 +152,7 @@ const ACHIEVEMENTS = {
             id: "time_traveler",
             title: "Time Traveler",
             description: "Watch at least one film from each Disney era.",
-            icon: "fa-clock-rotate-left",
+            icon: "⏰",
             category: "Era Mastery",
             condition: (watchedMovies) => {
                 const eras = ["golden", "wartime", "silver", "bronze", "renaissance", "postRenaissance", "revival"];
@@ -201,7 +201,7 @@ const ACHIEVEMENTS = {
             id: "princess_parade",
             title: "Princess Parade",
             description: "Watch all Disney Princess films.",
-            icon: "fa-crown",
+            icon: "👸",
             category: "Themed Collections",
             condition: (watchedMovies, allMovies) => {
                 const princessMovies = ["Snow White and the Seven Dwarfs", "Cinderella", "Sleeping Beauty", 
@@ -215,7 +215,7 @@ const ACHIEVEMENTS = {
             id: "animal_kingdom",
             title: "Animal Kingdom",
             description: "Watch 10 films featuring animal protagonists.",
-            icon: "fa-paw",
+            icon: "🐾",
             category: "Themed Collections",
             condition: (watchedMovies) => {
                 const animalMovies = ["Dumbo", "Bambi", "Lady and the Tramp", "101 Dalmatians", 
@@ -231,7 +231,7 @@ const ACHIEVEMENTS = {
             id: "villain_enthusiast",
             title: "Villain Enthusiast",
             description: "Watch 8 films with iconic Disney villains.",
-            icon: "fa-skull",
+            icon: "💀",
             category: "Themed Collections",
             condition: (watchedMovies) => {
                 const villainMovies = ["Snow White", "Sleeping Beauty", "The Little Mermaid", 
@@ -287,7 +287,7 @@ const ACHIEVEMENTS = {
             id: "weekend_warrior",
             title: "Weekend Warrior",
             description: "Watch 5 films in a single weekend.",
-            icon: "fa-calendar-day",
+            icon: "📅",
             category: "Viewing Habits",
             // This achievement would need custom tracking in your watchHistory data
             condition: () => false // Placeholder - implement custom logic
@@ -296,7 +296,7 @@ const ACHIEVEMENTS = {
             id: "night_owl",
             title: "Night Owl",
             description: "Watch a Disney film after midnight.",
-            icon: "fa-moon",
+            icon: "🌙",
             category: "Viewing Habits",
             // This achievement would need custom tracking in your watchHistory data
             condition: () => false // Placeholder - implement custom logic
@@ -305,10 +305,43 @@ const ACHIEVEMENTS = {
             id: "marathon_master",
             title: "Marathon Master",
             description: "Watch 3 films back-to-back in a single day.",
-            icon: "fa-forward-fast",
+            icon: "⏩",
             category: "Viewing Habits",
             // This achievement would need custom tracking in your watchHistory data  
             condition: () => false // Placeholder - implement custom logic
+        },
+        {
+            id: 'holiday-spirit',
+            title: 'Holiday Spirit',
+            description: 'Watch a Disney film on Christmas Day or New Year\'s Day.',
+            icon: '🎄',
+            special: true,
+            requirement: (watchedMovies, achievementData) => {
+                if (!achievementData?.watchDates) return false;
+                return achievementData.watchDates.some(date => {
+                    const d = new Date(date);
+                    return (d.getMonth() === 11 && d.getDate() === 25) || // Christmas
+                           (d.getMonth() === 0 && d.getDate() === 1);     // New Year's
+                });
+            }
+        },
+        {
+            id: 'global-viewer',
+            title: 'Global Viewer',
+            description: 'Watch movies set in 5 different continents.',
+            icon: '🌍',
+            requirement: (watchedMovies) => {
+                const continents = {
+                    'Europe': [1, 12, 31],      // Snow White, Cinderella, Beauty and the Beast
+                    'Asia': [36, 41, 53],       // Mulan, Big Hero 6, Raya
+                    'Africa': [33, 44],         // Lion King, Brother Bear
+                    'Americas': [32, 49],       // Pocahontas, Princess and the Frog
+                    'Oceania': [56]             // Moana
+                };
+                return Object.values(continents).filter(movies => 
+                    movies.some(id => watchedMovies.includes(id))
+                ).length >= 5;
+            }
         }
     ],
 
@@ -323,6 +356,51 @@ const ACHIEVEMENTS = {
                 const toyStoryFilms = [101, 103, 111, 121]; // Toy Story 1-4
                 return toyStoryFilms.every(id => watchedMovies.includes(id));
             }
+        },
+        {
+            id: 'musical-maestro',
+            title: 'Musical Maestro',
+            description: 'Watch 10 Disney musical films featuring iconic Sherman Brothers or Alan Menken songs.',
+            icon: '🎵',
+            requirement: (watchedMovies) => {
+                const musicalFilms = [1, 4, 12, 13, 16, 28, 31, 32, 33, 36, 49, 50, 53];
+                return musicalFilms.filter(id => watchedMovies.includes(id)).length >= 10;
+            }
+        },
+        {
+            id: 'animation-evolution',
+            title: 'Animation Evolution',
+            description: 'Watch films from all major animation styles: Traditional, Digital, and CG.',
+            icon: '🎨',
+            requirement: (watchedMovies) => {
+                const traditional = [1, 2, 3, 4, 5].some(id => watchedMovies.includes(id));
+                const digital = [31, 32, 33].some(id => watchedMovies.includes(id));
+                const cg = [101, 102, 103].some(id => watchedMovies.includes(id));
+                return traditional && digital && cg;
+            }
+        },
+        {
+            id: 'disney-decades',
+            title: 'Disney Decades',
+            description: 'Watch at least one film from each decade (1930s-2020s).',
+            icon: '📅',
+            requirement: (watchedMovies, achievementData) => {
+                const decades = {
+                    '1930s': [1],
+                    '1940s': [2, 3, 4, 5],
+                    '1950s': [12, 13],
+                    '1960s': [14, 15, 16],
+                    '1970s': [17, 18, 19],
+                    '1980s': [20, 21, 22],
+                    '1990s': [28, 29, 30, 31, 32],
+                    '2000s': [40, 41, 42, 43],
+                    '2010s': [50, 51, 52, 53],
+                    '2020s': [60, 61, 62]
+                };
+                return Object.values(decades).every(ids => 
+                    ids.some(id => watchedMovies.includes(id))
+                );
+            }
         }
     ],
 
@@ -332,7 +410,7 @@ const ACHIEVEMENTS = {
             id: "pixar_perfect",
             title: "Pixar Perfect",
             description: "Watch all Pixar films.",
-            icon: "fa-lamp",
+            icon: "💡",
             category: "Studio Mastery",
             condition: (watchedMovies, allMovies) => {
                 const pixarMovies = allMovies.filter(movie => movie.studio === "pixar");
@@ -344,7 +422,7 @@ const ACHIEVEMENTS = {
             id: "studio_balance",
             title: "Perfectly Balanced",
             description: "Watch an equal number of Disney and Pixar films (minimum 10 each).",
-            icon: "fa-scale-balanced",
+            icon: "⚖️",
             category: "Studio Mastery",
             condition: (watchedMovies) => {
                 const disneyCount = watchedMovies.filter(movie => movie.studio === "disney").length;
@@ -360,7 +438,7 @@ const ACHIEVEMENTS = {
             id: "oscar_collector",
             title: "Oscar Collector",
             description: "Watch all Oscar-winning Best Animated Feature films.",
-            icon: "fa-award",
+            icon: "🏆",
             category: "Special Achievements",
             condition: (watchedMovies) => {
                 const oscarWinners = ["Shrek", "Spirited Away", "Finding Nemo", "The Incredibles", 
@@ -377,10 +455,36 @@ const ACHIEVEMENTS = {
             id: "completionist",
             title: "Animation Completionist",
             description: "Watch every Disney and Pixar animated feature film.",
-            icon: "fa-trophy",
+            icon: "🏆",
             category: "Special Achievements",
             condition: (watchedMovies, allMovies) => {
                 return watchedMovies.length === allMovies.length && allMovies.length > 0;
+            }
+        },
+        {
+            id: 'five-star-fan',
+            title: 'Five Star Fan',
+            description: 'Rate 10 different movies with 5 stars.',
+            icon: '⭐',
+            requirement: (watchedMovies, achievementData, storageManager) => {
+                const ratings = storageManager.getRatings();
+                return Object.values(ratings)
+                    .filter(r => r.rating === 5)
+                    .length >= 10;
+            }
+        },
+        {
+            id: 'disney-historian',
+            title: 'Disney Historian',
+            description: 'Watch films spanning 80+ years of Disney animation history.',
+            icon: '📚',
+            requirement: (watchedMovies) => {
+                const watchedYears = ALL_FILMS
+                    .filter(film => watchedMovies.includes(film.id))
+                    .map(film => film.year);
+                const minYear = Math.min(...watchedYears);
+                const maxYear = Math.max(...watchedYears);
+                return maxYear - minYear >= 80;
             }
         }
     ]
