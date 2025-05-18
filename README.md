@@ -106,12 +106,6 @@ All Disney and Pixar properties, characters, and related elements are trademarks
 
 Website designed by [GridGhost.dev](https://gridghost.dev)
 
-## 📷 Screenshots
-
-![Main Interface](screenshots/main.png)
-![Achievement System](screenshots/achievements.png)
-![Movie Details](screenshots/details.png)
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/disney-tracker/issues).
