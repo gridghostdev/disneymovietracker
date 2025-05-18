@@ -57,6 +57,8 @@
     --card-padding: 24px;
     --section-spacing: 60px;
     --element-spacing: 20px;
+
+    --mickey-red: #e60023; /* Classic Mickey red color */
 }
 
 /* Base Elements */
@@ -823,22 +825,201 @@ header {
     color: var(--accent-color);
 }
 
-/* Empty state */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    max-width: 500px;
-    margin: 0 auto;
+/* Movie Rating */
+.movie-rating {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 8px 15px;
+    border-radius: var(--border-radius-full);
+    z-index: 2;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.empty-state h3 {
-    margin-bottom: 15px;
-    color: var(--gray-700);
+.rating-stars {
+    color: var(--accent-color);
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    display: flex;
+    gap: 2px;
 }
 
-.empty-state p {
-    color: var(--gray-500);
-    margin-bottom: 25px;
+.rating-stars::before {
+    content: "";
+}
+
+/* Replace stars with Mickey heads */
+.rating-stars span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-image: url('../svg/mickey.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(82%) saturate(4136%) hue-rotate(343deg) brightness(93%) contrast(118%);
+}
+
+.rating-label {
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Rating Section */
+.rating-section {
+    margin-top: 0;
+    padding: 16px 30px;
+    border: 2px solid var(--mickey-red);
+    border-radius: var(--border-radius-full);
+    background: white;
+    box-shadow: var(--box-shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+}
+
+.rating-section h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--mickey-red);
+}
+
+.star-rating {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+}
+
+.star {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    background-image: url('../svg/mickey.svg');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0) saturate(100%) invert(88%) sepia(3%) saturate(107%) hue-rotate(169deg) brightness(92%) contrast(91%);
+    transition: all var(--transition-fast);
+}
+
+.star:hover,
+.star.active {
+    filter: brightness(0) saturate(100%) invert(21%) sepia(91%) saturate(5205%) hue-rotate(347deg) brightness(94%) contrast(122%);
+    transform: scale(1.2);
+}
+
+.star:hover ~ .star {
+    filter: brightness(0) saturate(100%) invert(88%) sepia(3%) saturate(107%) hue-rotate(169deg) brightness(92%) contrast(91%);
+}
+
+.remove-rating-btn {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: none;
+    border-radius: var(--border-radius-full);
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.remove-rating-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.remove-rating-btn::before {
+    content: "\f00d";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 0.8rem;
+}
+
+/* Rating Display in Modal */
+.rating-display {
+    padding: 16px 30px;
+    border-radius: var(--border-radius-full);
+    background: white;
+    border: 2px solid var(--mickey-red);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.rating-display .rating-stars {
+    color: var(--mickey-red);
+    font-size: 1.2rem;
+    gap: 4px;
+}
+
+.rating-display .rating-stars span {
+    width: 18px;
+    height: 18px;
+}
+
+.rating-number {
+    font-weight: 600;
+    color: var(--mickey-red);
+    font-size: 1rem;
+}
+
+/* Rating Display in Modal Actions */
+.movie-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: auto;
+}
+
+.watch-toggle-btn {
+    padding: 16px 30px;
+    border-radius: var(--border-radius-full);
+    background: white;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all var(--transition-normal);
+    box-shadow: var(--box-shadow-sm);
+}
+
+.watch-toggle-btn:hover {
+    background: rgba(99, 102, 241, 0.05);
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow);
+}
+
+.watch-toggle-btn.watched {
+    background: var(--primary-color);
+    color: white;
+}
+
+.watch-toggle-btn.watched:hover {
+    background: var(--primary-dark);
+}
+
+.watch-toggle-btn i {
+    font-size: 1.1rem;
 }
 
 /* Modal Styles */
@@ -1030,8 +1211,11 @@ header {
 .rating-display {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 30px;
+    background: var(--gray-100);
+    padding: 15px 20px;
+    border-radius: var(--border-radius-lg);
 }
 
 .rating-stars {
@@ -1044,47 +1228,11 @@ header {
 }
 
 .rating-number {
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--gray-700);
-}
-
-.watch-toggle-btn {
-    padding: 16px 30px;
-    border-radius: var(--border-radius-full);
-    background: white;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all var(--transition-normal);
-    margin-top: auto;
-    align-self: flex-start;
-    box-shadow: var(--box-shadow-sm);
-}
-
-.watch-toggle-btn:hover {
-    background: rgba(99, 102, 241, 0.05);
-    transform: translateY(-2px);
-    box-shadow: var(--box-shadow);
-}
-
-.watch-toggle-btn.watched {
-    background: var(--primary-color);
-    color: white;
-}
-
-.watch-toggle-btn.watched:hover {
-    background: var(--primary-dark);
-}
-
-.watch-toggle-btn i {
-    font-size: 1.1rem;
+    padding-left: 15px;
+    border-left: 2px solid var(--gray-200);
 }
 
 /* Footer */

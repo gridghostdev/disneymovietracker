@@ -10,7 +10,8 @@ class StorageManager {
             watchHistory: 'disneyTracker_watchHistory',
             achievements: 'disneyTracker_achievements',
             achievementData: 'disneyTracker_achievementData',
-            preferences: 'disneyTracker_preferences'
+            preferences: 'disneyTracker_preferences',
+            ratings: 'disneyTracker_ratings'
         };
         
         // Initialize with default values if storage is empty
@@ -44,6 +45,10 @@ class StorageManager {
                     status: ['watched', 'unwatched']
                 }
             });
+        }
+
+        if (!localStorage.getItem(this.keys.ratings)) {
+            this.saveRatings({});
         }
     }
 
@@ -166,6 +171,47 @@ class StorageManager {
         localStorage.setItem(this.keys.preferences, JSON.stringify(preferences));
     }
 
+    // Rating Storage
+    getRatings() {
+        return JSON.parse(localStorage.getItem(this.keys.ratings)) || {};
+    }
+
+    saveRatings(ratings) {
+        localStorage.setItem(this.keys.ratings, JSON.stringify(ratings));
+    }
+
+    setMovieRating(movieId, rating) {
+        const ratings = this.getRatings();
+        ratings[movieId] = {
+            rating: rating,
+            timestamp: Date.now()
+        };
+        this.saveRatings(ratings);
+        
+        // Emit rating change event
+        const event = new CustomEvent('ratingChanged', {
+            detail: { movieId, rating }
+        });
+        document.dispatchEvent(event);
+    }
+
+    getMovieRating(movieId) {
+        const ratings = this.getRatings();
+        return ratings[movieId]?.rating || null;
+    }
+
+    removeMovieRating(movieId) {
+        const ratings = this.getRatings();
+        delete ratings[movieId];
+        this.saveRatings(ratings);
+        
+        // Emit rating removed event
+        const event = new CustomEvent('ratingChanged', {
+            detail: { movieId, rating: null }
+        });
+        document.dispatchEvent(event);
+    }
+
     // Get progress stats
     getProgressStats() {
         const watchedMovies = this.getWatchedMovies();
@@ -211,6 +257,7 @@ class StorageManager {
         localStorage.removeItem(this.keys.achievements);
         localStorage.removeItem(this.keys.achievementData);
         localStorage.removeItem(this.keys.preferences);
+        localStorage.removeItem(this.keys.ratings);
         this.initialize();
     }
 }

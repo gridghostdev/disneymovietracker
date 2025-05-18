@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         movies.forEach(movie => {
             const isWatched = watchedMovies.includes(movie.id);
+            const rating = storageManager.getMovieRating(movie.id);
             
             const movieCard = document.createElement('div');
             movieCard.className = 'movie-card';
@@ -133,6 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="watch-status ${isWatched ? 'watched' : ''}" data-id="${movie.id}">
                         <i class="fas ${isWatched ? 'fa-check-circle' : 'fa-circle'}"></i>
                     </div>
+                    ${rating ? `<div class="movie-rating">
+                        <span class="rating-stars">${'<span></span>'.repeat(rating)}</span>
+                        <span class="rating-label">${rating}/5</span>
+                    </div>` : ''}
                 </div>
                 <div class="movie-info">
                     <h3 class="movie-title">${movie.title}</h3>
@@ -165,6 +170,37 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Add rating change listener
+    document.addEventListener('ratingChanged', function(event) {
+        const { movieId, rating } = event.detail;
+        
+        // Find the movie card
+        const movieCard = document.querySelector(`.movie-card[data-id="${movieId}"]`);
+        if (!movieCard) return;
+        
+        // Find or create the rating container
+        let ratingContainer = movieCard.querySelector('.movie-rating');
+        if (!rating) {
+            // Remove rating display if rating was removed
+            if (ratingContainer) {
+                ratingContainer.remove();
+            }
+            return;
+        }
+        
+        if (!ratingContainer) {
+            ratingContainer = document.createElement('div');
+            ratingContainer.className = 'movie-rating';
+            movieCard.querySelector('.movie-poster').appendChild(ratingContainer);
+        }
+        
+        // Update rating display
+        ratingContainer.innerHTML = `
+            <span class="rating-stars">${'<span></span>'.repeat(rating)}</span>
+            <span class="rating-label">${rating}/5</span>
+        `;
+    });
     
     function toggleWatchStatus(movieId, element) {
         const movieCard = element.closest('.movie-card');
@@ -355,6 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 const isWatched = watchedMovies.includes(movie.id);
+                const userRating = storageManager.getMovieRating(movie.id);
                 const releaseDate = data.release_date ? new Date(data.release_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : movie.year;
                 
                 modalBody.innerHTML = `
@@ -378,10 +415,22 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <p><strong>Director:</strong> ${getDirector(data.credits) || 'N/A'}</p>
                                 <p><strong>Rating:</strong> ${data.vote_average ? data.vote_average.toFixed(1) + '/10' : 'N/A'}</p>
                             </div>
-                            <button class="watch-toggle-btn ${isWatched ? 'watched' : ''}" data-id="${movie.id}">
-                                <i class="fas ${isWatched ? 'fa-check-circle' : 'fa-circle'}"></i>
-                                ${isWatched ? 'Watched' : 'Mark as Watched'}
-                            </button>
+                            <div class="movie-actions">
+                                <button class="watch-toggle-btn ${isWatched ? 'watched' : ''}" data-id="${movie.id}">
+                                    <i class="fas ${isWatched ? 'fa-check-circle' : 'fa-circle'}"></i>
+                                    ${isWatched ? 'Watched' : 'Mark as Watched'}
+                                </button>
+                                <div class="rating-section">
+                                    <h4>Your Rating</h4>
+                                    <div class="star-rating">
+                                        ${Array.from({ length: 5 }, (_, i) => `
+                                            <span class="star ${userRating && userRating >= i + 1 ? 'active' : ''}" 
+                                                  data-rating="${i + 1}"></span>
+                                        `).join('')}
+                                    </div>
+                                    ${userRating ? `<button class="remove-rating-btn">×</button>` : ''}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -430,11 +479,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update achievement stats
                     updateAchievementStats();
                 });
+                
+                // Add rating event listeners
+                const stars = modalBody.querySelectorAll('.star');
+                stars.forEach(star => {
+                    star.addEventListener('click', () => {
+                        const rating = parseInt(star.dataset.rating);
+                        storageManager.setMovieRating(movie.id, rating);
+                        updateStarRating(stars, rating);
+                        if (!modalBody.querySelector('.remove-rating-btn')) {
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-rating-btn';
+                            removeBtn.textContent = 'Remove Rating';
+                            modalBody.querySelector('.rating-section').appendChild(removeBtn);
+                            addRemoveRatingListener(removeBtn, movie.id, stars);
+                        }
+                    });
+                });
+
+                // Add remove rating button listener
+                const removeBtn = modalBody.querySelector('.remove-rating-btn');
+                if (removeBtn) {
+                    addRemoveRatingListener(removeBtn, movie.id, stars);
+                }
             })
             .catch(error => {
                 console.error('Error fetching movie details:', error);
                 modalBody.innerHTML = '<p>Error loading movie details.</p>';
             });
+    }
+    
+    function updateStarRating(stars, rating) {
+        stars.forEach((star, index) => {
+            star.classList.toggle('active', index < rating);
+        });
+    }
+    
+    function addRemoveRatingListener(removeBtn, movieId, stars) {
+        removeBtn.addEventListener('click', () => {
+            storageManager.removeMovieRating(movieId);
+            updateStarRating(stars, 0);
+            removeBtn.remove();
+        });
     }
     
     function getDirector(credits) {
